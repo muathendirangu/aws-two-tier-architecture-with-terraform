@@ -251,4 +251,5 @@ resource "aws_db_instance" "terraform-database-tier-rds-instance" {
     skip_final_snapshot = true
     parameter_group_name = "default.mysql5.7"
     db_subnet_group_name = aws_db_subnet_group.terraform-database-tier-db-subnet-group.name
+    depends_on = [ aws_db_subnet_group.terraform-database-tier-db-subnet-group ]
 }
