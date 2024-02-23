@@ -90,3 +90,18 @@ resource "aws_route_table_association" "terraform-backend-tier-vpc-public-route-
     subnet_id = aws_subnet.terraform-web-server-tier-public-subnet-2.id
     route_table_id = aws_route_table.terraform-backend-tier-vpc-public-route-table.id
 }
+
+# create elastic ip
+resource "aws_eip" "lb" {
+    domain = "vpc"
+}
+
+# create NAT gateway
+resource "aws_nat_gateway" "terraform-backend-tier-vpc-nat-gateway" {
+    allocation_id = aws_eip.lb.id
+    subnet_id = aws_subnet.terraform-web-server-tier-public-subnet-1.id
+    depends_on = [ aws_internet_gateway.terraform-backend-tier-vpc-igw ]
+    tags = {
+        Name = "terraform-backend-tier-vpc-nat-gateway"
+    }
+}
