@@ -130,3 +130,73 @@ resource "aws_route_table_association" "terraform-backend-tier-vpc-private-route
     route_table_id = aws_route_table.terraform-backend-tier-vpc-private-route-table.id
     depends_on = [ aws_route_table.terraform-backend-tier-vpc-private-route-table ]
 }
+
+
+# create a security group for the web server tier
+resource "aws_security_group" "terraform-web-server-tier-security-group" {
+    name = "terraform-web-server-tier-security-group"
+    vpc_id = aws_vpc.terraform-backend-tier-vpc.id
+    description = "Security group for the web server tier"
+
+    # allow http traffic from the web server tier
+    ingress {
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    # allow https traffic from the web server tier
+    ingress {
+        from_port = 443
+        to_port = 443
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # allow ssh traffic from the web server tier
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # allow outbound traffic from the web server tier
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+# create a security group for the database tier
+resource "aws_security_group" "terraform-database-tier-security-group" {
+    name = "terraform-database-tier-security-group"
+    vpc_id = aws_vpc.terraform-backend-tier-vpc.id
+    description = "Security group for the database tier"
+
+    # allow mysql traffic from the database tier
+    ingress {
+        from_port = 3306
+        to_port = 3306
+        protocol = "tcp"
+        security_groups = [ aws_security_group.terraform-web-server-tier-security-group.id ]
+    }
+
+    # allow ssh traffic from the database tier
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # allow outbound traffic from the database tier
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
