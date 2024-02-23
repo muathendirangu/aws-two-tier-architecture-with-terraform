@@ -230,3 +230,25 @@ resource "aws_autoscaling_group" "terraform-web-server-tier-asg" {
         version = "$Latest"
     }
 }
+
+# create a subnet group for the database tier
+resource "aws_db_subnet_group" "terraform-database-tier-db-subnet-group" {
+    name = "terraform-database-tier-db-subnet-group"
+    subnet_ids = [ aws_subnet.terraform-database-tier-private-subnet-1.id, aws_subnet.terraform-database-tier-private-subnet-2.id ]
+    tags = {
+        Name = "terraform-database-tier-db-subnet-group"
+    }
+}
+# create an RDS instance for the database tier
+resource "aws_db_instance" "terraform-database-tier-rds-instance" {
+    allocated_storage = 20
+    engine = "mysql"
+    engine_version = "5.7"
+    instance_class = "db.t2.micro"
+    db_name = "terraform-database-tier-rds-instance"
+    username = "admin"
+    password = "<PASSWORD>"
+    skip_final_snapshot = true
+    parameter_group_name = "default.mysql5.7"
+    db_subnet_group_name = aws_db_subnet_group.terraform-database-tier-db-subnet-group.name
+}
