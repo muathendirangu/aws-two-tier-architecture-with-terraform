@@ -105,3 +105,28 @@ resource "aws_nat_gateway" "terraform-backend-tier-vpc-nat-gateway" {
         Name = "terraform-backend-tier-vpc-nat-gateway"
     }
 }
+
+# create a route table for the private subnets
+resource "aws_route_table" "terraform-backend-tier-vpc-private-route-table" {
+    vpc_id = aws_vpc.terraform-backend-tier-vpc.id
+    route = {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.terraform-backend-tier-vpc-nat-gateway.id
+    }
+    tags = {
+        Name = "terraform-backend-tier-vpc-private-route-table"
+    }
+}
+
+# associate the private route table with the private subnets
+resource "aws_route_table_association" "terraform-backend-tier-vpc-private-route-table-association-1" {
+    subnet_id = aws_subnet.terraform-database-tier-private-subnet-1.id
+    route_table_id = aws_route_table.terraform-backend-tier-vpc-private-route-table.id
+    depends_on = [ aws_route_table.terraform-backend-tier-vpc-private-route-table ]
+}
+
+resource "aws_route_table_association" "terraform-backend-tier-vpc-private-route-table-association-2" {
+    subnet_id = aws_subnet.terraform-database-tier-private-subnet-2.id
+    route_table_id = aws_route_table.terraform-backend-tier-vpc-private-route-table.id
+    depends_on = [ aws_route_table.terraform-backend-tier-vpc-private-route-table ]
+}
