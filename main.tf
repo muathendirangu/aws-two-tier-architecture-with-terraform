@@ -67,3 +67,26 @@ resource "aws_internet_gateway" "terraform-backend-tier-vpc-igw" {
         Name = "terraform-backend-tier-vpc-igw"
     }
 }
+
+# create a route table for the public subnets
+resource "aws_route_table" "terraform-backend-tier-vpc-public-route-table" {
+    vpc_id = aws_vpc.terraform-backend-tier-vpc.id
+    route {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.terraform-backend-tier-vpc-igw.id
+    }
+    tags = {
+        Name = "terraform-backend-tier-vpc-public-route-table"
+    }
+}
+
+# associate the public route table with the public subnets
+resource "aws_route_table_association" "terraform-backend-tier-vpc-public-route-table-association-1" {
+    subnet_id = aws_subnet.terraform-web-server-tier-public-subnet-1.id
+    route_table_id = aws_route_table.terraform-backend-tier-vpc-public-route-table.id
+}
+
+resource "aws_route_table_association" "terraform-backend-tier-vpc-public-route-table-association-2" {
+    subnet_id = aws_subnet.terraform-web-server-tier-public-subnet-2.id
+    route_table_id = aws_route_table.terraform-backend-tier-vpc-public-route-table.id
+}
