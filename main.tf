@@ -59,3 +59,11 @@ resource "aws_subnet" "terraform-database-tier-private-subnet-2" {
     }
 
 }
+
+# create an internet gateway for the vpc
+resource "aws_internet_gateway" "terraform-backend-tier-vpc-igw" {
+    vpc_id = aws_vpc.terraform-backend-tier-vpc.id
+    tags = {
+        Name = "terraform-backend-tier-vpc-igw"
+    }
+}
