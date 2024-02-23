@@ -200,3 +200,33 @@ resource "aws_security_group" "terraform-database-tier-security-group" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 }
+
+# create a launch template for the web server tier
+resource "aws_launch_template" "terraform-web-server-tier-launch-template" {
+    name = "terraform-web-server-tier-launch-template"
+    image_id = "ami-00000000000000000"
+    instance_type = "t2.micro"
+    vpc_security_group_ids = [ aws_security_group.terraform-web-server-tier-security-group.id ]
+    # key_name = var.key_name
+    user_data = base64decode(<<EOF
+    #!/bin/bash
+    yum update -y
+    yum install -y httpd
+    systemctl start httpd
+    systemctl enable httpd
+    EOF
+    )
+}
+
+# create autoscaling group for the web server tier
+resource "aws_autoscaling_group" "terraform-web-server-tier-asg" {
+    name = "terraform-web-server-tier-asg"
+    min_size = 2
+    max_size = 4
+    desired_capacity = 2
+    availability_zones = [ "us-east-1a", "us-east-1b" ]
+    launch_template {
+        id = aws_launch_template.terraform-web-server-tier-launch-template.id
+        version = "$Latest"
+    }
+}
